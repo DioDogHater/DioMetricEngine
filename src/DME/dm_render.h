@@ -110,10 +110,10 @@ DM_FUNC void DM_render_tile(Tileset ts, int col, int row, Rect r, double angle, 
 	DM_render_tile_index((t),(i),(SDL_Rect){(x),(y),(w),(h)},0.f,NULL,(f));\
 })
 
-DM_FUNC void DM_render_tile_index(Tileset ts, uint index, Rect r, double angle, Vec2* center, SDL_RendererFlip flip){
-	if(!ts.asset.src) return;
-	SDL_Rect cr = DM_get_tile_index(index,&ts);
-	DM_render_texture_ex(ts.asset,&cr,r,angle,center,flip);
+DM_FUNC void DM_render_tile_index(Tileset* ts, uint index, Rect r, double angle, Vec2* center, SDL_RendererFlip flip){
+	if(!ts->asset.src) return;
+	SDL_Rect cr = DM_get_tile_index(index,ts);
+	DM_render_texture_ex(ts->asset,&cr,r,angle,center,flip);
 }
 
 // Primitive shapes

@@ -22,4 +22,21 @@ DM_FUNC bool DM_keyup(SDL_Scancode c){
 	return !(bool)keyboard_state[c];
 }
 
+// Handle input for a player
+typedef struct {
+	uchar k_up, k_down, k_right, k_left;	// Scancode, so please use SCAN(x)
+	bool up, down, right, left;
+	Vec3 direction;
+} PlayerController;
+#define NEW_PLAYER_CONTROLLER(u,d,r,l) (PlayerController){(u),(d),(r),(l),false,false,false,false,VEC3ZERO}
+
+DM_FUNC void PlayerController_update(PlayerController* pc){
+	DM_ASSERTV(pc,"PlayerController_update: NULL arg");
+	pc->up = DM_keydown(pc->k_up);
+	pc->down = DM_keydown(pc->k_down);
+	pc->left = DM_keydown(pc->k_left);
+	pc->right = DM_keydown(pc->k_right);
+	pc->direction = Vec3_normalize(VEC3(pc->right - pc->left + pc->down - pc->up, 0.f, pc->down - pc->up + pc->left - pc->right));
+}
+
 #endif
