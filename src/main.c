@@ -8,7 +8,7 @@
 
 #define MAX_FPS 120
 
-Font terminal;
+Font terminal = NEW_FONT();
 
 Tileset map_tiles = NEW_TILESET(0,0,32,32);
 
@@ -17,19 +17,23 @@ Projection isometric = PROJECTION(1.f,0.5f,GRID_SIZE,GRID_SIZE);
 
 Map map = NEW_MAP();
 
+Tileset dummy_idle = NEW_TILESET(0,0,64,64);
+Tileset dummy_run = NEW_TILESET(0,0,64,64);
+
+RL_Array resources = {
+	RL_FONT(terminal,	20, "assets/terminal.ttf"),
+	RL_TILESET(map_tiles,	"assets/sandbox32/tileset.png"),
+	RL_TILESET(dummy_idle,	"assets/dummy/idle.png"),
+	RL_TILESET(dummy_run,	"assets/dummy/run.png"),
+	RL_NULL()
+};
+
 bool load_resources(){
-	if(!DM_load_font("assets/terminal.ttf",20,&terminal))
-		return false;
-
-	if(!DM_load_tileset("assets/sandbox32/tileset.png",&map_tiles))
-		return false;
-
-	return true;
+	return DM_load_RL_Array(resources);	
 }
 
 void free_resources(){
-	DM_free_font(&terminal);
-	DM_free_tileset(&map_tiles);
+	DM_free_RL_Array(resources);
 }
 
 int main(int argc, char *argv[]){
@@ -41,7 +45,7 @@ int main(int argc, char *argv[]){
 		return 1;
 	
 	// Player movement variables
-	float pl_speed = 10.f;
+	float pl_speed = 20.f;
 	PlayerController pl_controller = NEW_PLAYER_CONTROLLER(
 		SCAN(W), SCAN(S), SCAN(D), SCAN(A)
 	);

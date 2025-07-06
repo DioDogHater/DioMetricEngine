@@ -38,6 +38,43 @@ typedef struct{
 } Tileset;
 #define NEW_TILESET(xo,yo,w,h) (Tileset){NEW_TEXTURE(),(xo),(yo),(w),(h),0,0}
 
+// Resource Loading (RL)
+typedef enum{
+	RL_Texture,
+	RL_Font,
+	RL_Text,
+	RL_Tileset,
+	RL_None
+} RL_type;	// Resource Loading Type
+typedef union{
+	Texture* texture;
+	Font* font;
+	Text* text;
+	Tileset* tileset;
+	void* _invalid;
+} RL_ptr;	// Resource Loading Pointer
+typedef union{
+	const char* path;
+	struct{
+		const char* font_path;
+		uint font_size;
+	};
+	Color color;
+} RL_src;
+typedef struct{
+	RL_type type;
+	RL_ptr res;
+	RL_src src;
+} RL_Res;	// Resource Loading Resource
+typedef RL_Res RL_Array[];	// Resource Loading Array
+// Macros for convenience
+#define RL_ELEM(t,r,s) (RL_Res){(RL_type)(t),(RL_ptr)(r),(RL_src)(s)}
+#define RL_TEXTURE(r,s) (RL_Res){(RL_type)(RL_Texture),(RL_ptr){.texture=&(r)},(RL_src){(const char*)(s)}}
+#define RL_FONT(r,sz,s) (RL_Res){(RL_type)(RL_Font),(RL_ptr){.font=&(r)},(RL_src){.font_path=(const char*)(s), .font_size=(sz)}}
+#define RL_TEXT(r,s) (RL_Res){(RL_type)(RL_Text),(RL_ptr){.text=&(r)},(RL_src){.color=(Color)(s)}}
+#define RL_TILESET(r,s) (RL_Res){(RL_type)(RL_Tileset),(RL_ptr){.tileset=&(r)},(RL_src){(const char*)(s)}}
+#define RL_NULL() (RL_Res){(RL_type)(RL_None),(RL_ptr){._invalid=NULL},(const char*)NULL}
+
 // Resource handling
 DM_FUNC void DM_free_texture(Texture* dest){
 	DM_ASSERTV(dest,"free_texture: NULL arg");
@@ -154,6 +191,58 @@ DM_FUNC SDL_Rect DM_get_tile_index(uint index, Tileset* ts){
 		ts->tile_width,
 		ts->tile_height
 	};
+}
+
+DM_FUNC bool DM_load_RL_Array(RL_Array rla){
+	DM_ASSERT(rla,"load_RL_Array: NULL arg");
+	for(; (rla->type != RL_None) && (rla->res._invalid != NULL); rla++){
+		switch(rla->type){
+		case RL_Texture:
+			if(!DM_load_texture(rla->src.path, rla->res.texture))
+				return false;
+			break;
+		case RL_Font:
+			if(!DM_load_font(rla->src.font_path, rla->src.font_size, rla->res.font))
+				return false;
+			break;
+		case RL_Text:
+			if(!DM_load_text(rla->src.color, 0, rla->res.text))
+				return false;
+			break;
+		case RL_Tileset:
+			if(!DM_load_tileset(rla->src.path, rla->res.tileset))
+				return false;
+			break;
+		default:
+			DM_ERR("load_RL_Array: invalid resource");
+			return false;
+		}
+	}
+
+	return true;
+}
+
+DM_FUNC void DM_free_RL_Array(RL_Array rla){
+	DM_ASSERTV(rla,"free_RL_Array: NULL arg");
+	for(; (rla->type != RL_None) && (rla->res._invalid != NULL); rla++){
+		switch(rla->type){
+		case RL_Texture:
+			DM_free_texture(rla->res.texture);
+			break;
+		case RL_Font:
+			DM_free_font(rla->res.font);
+			break;
+		case RL_Text:
+			DM_free_text(rla->res.text);
+			break;
+		case RL_Tileset:
+			DM_free_tileset(rla->res.tileset);
+			break;
+		default:
+			DM_ERR("free_RL_Array: invalid resource");
+			return;
+		}
+	}
 }
 
 #endif
