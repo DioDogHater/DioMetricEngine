@@ -34,6 +34,7 @@ typedef SDL_Color Color;
 typedef SDL_Event Event;
 typedef SDL_Point Vec2;
 typedef SDL_Rect Rect;
+typedef Uint32 Ticks_t;
 
 // Misc types
 // --
@@ -42,6 +43,7 @@ typedef SDL_Rect Rect;
 SDL_Window* window = NULL;
 uint sw = 0, sh = 0;
 uint sw2 = 0, sh2 = 0;
+float _scaling_factor = 1.f;
 SDL_Renderer* renderer = NULL;
 int keyboard_state_size = 0;
 const bool* keyboard_state = NULL;
@@ -53,6 +55,9 @@ const bool* keyboard_state = NULL;
 #define DM_ERR(fmt,...) printf("DME - " fmt "\n",##__VA_ARGS__)
 #define DM_ASSERT(cond,fmt,...) if(!(cond)){ printf("DME - " fmt "\n",##__VA_ARGS__); return false; }
 #define DM_ASSERTV(cond,fmt,...) if(!(cond)){ printf("DME - " fmt "\n",##__VA_ARGS__); return; }
+
+// Debug printing
+#define DM_DEBUG(stmt,fmt) printf(#stmt " = " fmt "\n",(stmt))
 
 // Initialise the engine
 DM_FUNC bool DM_init(char* caption, uint width, uint height, SDL_WindowFlags flags){
@@ -89,6 +94,17 @@ DM_FUNC bool DM_init(char* caption, uint width, uint height, SDL_WindowFlags fla
 	return true;
 }
 
+// Changes the scaling of the rendered window
+// Without changing the logical resolution
+DM_FUNC void DM_scale_window(uint width, uint height){
+	DM_ASSERTV(window && renderer && sw && sh,"scale_window: Library not initialized")
+	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, 0);
+	SDL_RenderSetLogicalSize(renderer,sw,sh);
+	SDL_SetWindowSize(window,width,height);
+	SDL_SetWindowPosition(window,SDL_WINDOWPOS_CENTERED,SDL_WINDOWPOS_CENTERED);
+	_scaling_factor = (float)sw/(float)width;
+}
+
 // Quit the engine
 DM_FUNC void DM_quit(){
 	if(renderer)
@@ -103,6 +119,10 @@ DM_FUNC void DM_quit(){
 	SDL_Quit();
 }
 
+DM_FUNC Ticks_t DM_get_ticks(){
+	return SDL_GetTicks();
+}
+
 // Math
 #include "dm_math.h"
 
@@ -115,5 +135,7 @@ DM_FUNC void DM_quit(){
 // Rendering
 #include "dm_render.h"
 
+// Animations
+#include "dm_animations.h"
 
 #endif

@@ -1,6 +1,7 @@
 #ifndef DME_RESOURCES_H
 #define DME_RESOURCES_H
 
+#include <stdarg.h>
 #include "dm_engine.h"
 
 // Texture
@@ -133,7 +134,7 @@ DM_FUNC void DM_free_text(Text* dest){
 
 DM_FUNC bool DM_load_text(Color c, uint max_width, Text* dest){
 	DM_ASSERT(dest,"render_text: NULL arg");
-	if(!dest->font || !(*dest->font)) return true;
+	if(!dest->font || !(*dest->font) || strlen(dest->text) < 1) return true;
 	SDL_Surface* loaded_surface = TTF_RenderText_Solid_Wrapped(*dest->font, (const char*)dest->text, c, (max_width)?max_width:(99999));
 	if(!loaded_surface){
 		DM_ERR("TTF_RenderText_Solid(%s) error: %s",dest->text,TTF_GetError());
@@ -193,7 +194,7 @@ DM_FUNC SDL_Rect DM_get_tile_index(uint index, Tileset* ts){
 	};
 }
 
-DM_FUNC bool DM_load_RL_Array(RL_Array rla){
+DM_FUNC bool DM_load_resource_array(RL_Array rla){
 	DM_ASSERT(rla,"load_RL_Array: NULL arg");
 	for(; (rla->type != RL_None) && (rla->res._invalid != NULL); rla++){
 		switch(rla->type){
@@ -222,7 +223,7 @@ DM_FUNC bool DM_load_RL_Array(RL_Array rla){
 	return true;
 }
 
-DM_FUNC void DM_free_RL_Array(RL_Array rla){
+DM_FUNC void DM_free_resource_array(RL_Array rla){
 	DM_ASSERTV(rla,"free_RL_Array: NULL arg");
 	for(; (rla->type != RL_None) && (rla->res._invalid != NULL); rla++){
 		switch(rla->type){
@@ -244,5 +245,15 @@ DM_FUNC void DM_free_RL_Array(RL_Array rla){
 		}
 	}
 }
+
+// Fast and easy text formatting without worrying about memory management
+#ifndef DM_FORMAT_SIZE
+#define DM_FORMAT_SIZE 512
+#endif
+
+char _format_tmp[DM_FORMAT_SIZE] = {0};
+
+#define DM_FORMAT(fmt,...) sprintf(_format_tmp,(fmt),##__VA_ARGS__)
+#define DM_FORMAT_STR _format_tmp
 
 #endif

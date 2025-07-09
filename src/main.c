@@ -29,26 +29,32 @@ RL_Array resources = {
 };
 
 bool load_resources(){
-	return DM_load_RL_Array(resources);	
+	return DM_load_resource_array(resources);	
 }
 
 void free_resources(){
-	DM_free_RL_Array(resources);
+	DM_free_resource_array(resources);
 }
 
 int main(int argc, char *argv[]){
-	// Create a 800x500 window
-	if(!DM_init(NULL,800,500,0))
+	// Create a 640x360 window
+	if(!DM_init(NULL,640,360,0))
 		return 1;
+
+	DM_scale_window(1280,720);
 	
 	if(!load_resources())
 		return 1;
 	
 	// Player movement variables
 	float pl_speed = 20.f;
-	PlayerController pl_controller = NEW_PLAYER_CONTROLLER(
-		SCAN(W), SCAN(S), SCAN(D), SCAN(A)
-	);
+	PlayerController pl_controller = NEW_PLAYER_CONTROLLER(SCAN(W), SCAN(S), SCAN(D), SCAN(A));
+
+	// Player run animation
+	Animation player_run = NEW_ANIMATION(0,4,100,DM_ANIM_REPEAT);
+	DM_reset_animation(&player_run);
+	Animation player_rotate = NEW_ANIMATION(0,7,1000,DM_ANIM_REPEAT);
+	DM_reset_animation(&player_rotate);
 	
 	// Fill test_chunk with stuff
 	Map_alloc(&map,1);
@@ -57,7 +63,6 @@ int main(int argc, char *argv[]){
 	// Time related variables
 	Uint32 last_frame = SDL_GetTicks();
 	Text fps_counter = NEW_TEXT("- FPS",&terminal);
-
 	float time = 0.f;
 
 	// Game loop
@@ -100,9 +105,18 @@ int main(int argc, char *argv[]){
 		for(int y = 0; y < CHUNK_ROWS; y++){
 			for(int x = 0; x < CHUNK_COLS; x++, block++){
 				float dist = (float)(SQR(x-CHUNK_COLS/2) + SQR(y-CHUNK_ROWS/2))/(float)(CHUNK_SIZE);
-				block->height = sin(time*4.f+dist*42.f)*4.f*(1.f-dist);
+				block->height = sin(time*4.f+dist*50.f)*4.f*(1.f-dist);
 			}
 		}
+
+		// Render player
+		DM_update_animation(&player_run);
+		DM_update_animation(&player_rotate);
+		DM_RENDER_TILE_SCALED(dummy_run,player_run.frame,player_rotate.frame,sw2-32,sh2-32,64,64);
+		
+		Vec2 mouse = DM_mouse_pos(true);
+		DM_FORMAT("Mouse: %d, %d",mouse.x,mouse.y);
+		DM_render_temp_text(DM_FORMAT_STR,&terminal,RED,0,100,1.f);
 		
 		// Display FPS counter
 		DM_render_text(fps_counter,0,0,1.f);

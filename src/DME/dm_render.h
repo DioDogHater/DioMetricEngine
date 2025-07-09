@@ -64,6 +64,15 @@ DM_FUNC void DM_render_text(Text t, int x, int y, float scale){
 	DM_RENDER_TEXTURE_SCALED(t.loaded,x,y,(int)((float)t.width*scale),(int)((float)t.height*scale));
 }
 
+DM_FUNC void DM_render_temp_text(const char* txt, Font* font, Color c, int x, int y, float scale){
+	DM_ASSERTV(txt,"render_temp_text: NULL arg");
+	Text tmp = NEW_TEXT(" ",font);
+	strcpy(tmp.text,txt);
+	DM_load_text(c, 0, &tmp);
+	DM_render_text(tmp,x,y,scale);
+	DM_free_text(&tmp);
+}
+
 // DM_RENDER_TILE(tileset, column, row, x, y)
 #define DM_RENDER_TILE(t,c,r,x,y) ({\
 	DM_render_tile((t),(c),(r),(SDL_Rect){(x),(y),(t).tile_width,(t).tile_height},0.f,NULL,FLIP_NONE);\

@@ -39,4 +39,14 @@ DM_FUNC void PlayerController_update(PlayerController* pc){
 	pc->direction = Vec3_normalize(VEC3(pc->right - pc->left + pc->down - pc->up, 0.f, pc->down - pc->up + pc->left - pc->right));
 }
 
+DM_FUNC Vec2 DM_mouse_pos(bool scaled){
+	Vec2 mp = {0, 0};
+	SDL_GetMouseState(&mp.x,&mp.y);
+	if(scaled){
+		mp.x *= _scaling_factor;
+		mp.y *= _scaling_factor;
+	}
+	return mp;
+}
+
 #endif

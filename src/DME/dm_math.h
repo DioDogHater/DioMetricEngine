@@ -13,6 +13,7 @@
 #define ABS(x) ((x)<0?-(x):(x))
 #define SIGN(x) ((x)>0?1:((x)<0?-1:0))
 #define SQR(x) ((x)*(x))
+#define LERP(a,b,t) ((float)(a)+((float)(b)-(float)(a))*(float)(t))
 
 // Math related types
 typedef struct{
