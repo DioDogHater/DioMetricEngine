@@ -20,14 +20,14 @@ typedef struct{
 	float x, y, z;
 } Vec3;
 #define VEC3(x,y,z) (Vec3){(x),(y),(z)}
-#define VEC3ZERO VEC3(0,0,0)
+#define VEC3_ZERO VEC3(0,0,0)
 
 typedef struct{
 	Vec3 pos;
 	float yaw;
 } Transform;
 #define TRANSFORM(x,y,z,a) (Transform){VEC3((x),(y),(z)),(a)}
-#define TRANSFORM_IDENTITY (Transform){VEC3ZERO,0.f}
+#define TRANSFORM_IDENTITY (Transform){VEC3_ZERO,0.f}
 
 typedef struct{
 	float x, y;
@@ -64,12 +64,12 @@ DM_FUNC Vec3 Vec3_normalize(Vec3 v){
 	if(m != 0.f)
 		return Vec3_div_scale(v,m);
 	else
-		return VEC3ZERO;
+		return VEC3_ZERO;
 }
 
 // Transform Vec3
 DM_FUNC Vec3 Transform_apply(Vec3 v, Transform* t){
-	if(!t){ DM_ERR("Transform_apply: NULL arg"); return VEC3ZERO; }
+	if(!t){ DM_ERR("Transform_apply: NULL arg"); return VEC3_ZERO; }
 	Vec3 r = v;
 	if(t->yaw != 0.f){
 		float t_sin = sin(t->yaw), t_cos = cos(t->yaw);
@@ -83,7 +83,7 @@ DM_FUNC Vec3 Transform_apply(Vec3 v, Transform* t){
 // Project Vec3 with Projection (orthogonal)
 // World to screen coordinates
 DM_FUNC Vec2 Projection_apply(Vec3 v, Projection* p){
-	if(!p){ DM_ERR("Projection_apply: NULL arg"); return (Vec2){0,0}; }
+	if(!p){ DM_ERR("Projection_apply: NULL arg"); return VEC2_ZERO; }
 	uint tile_w2 = (p->tile_width >> 1);
 	uint tile_h2 = (p->tile_height >> 1);
 	return (Vec2){
@@ -94,7 +94,7 @@ DM_FUNC Vec2 Projection_apply(Vec3 v, Projection* p){
 
 // Screen to world coordinates
 DM_FUNC Vec3 Projection_inverse(Vec2 v, float y, Projection* p){
-	if(!p){ DM_ERR("Projection_inverse: NULL arg"); return VEC3ZERO; }
+	if(!p){ DM_ERR("Projection_inverse: NULL arg"); return VEC3_ZERO; }
 	uint tile_w2 = (p->tile_width >> 1);
 	uint tile_h2 = (p->tile_height >> 1);
 	v.x -= sw2;

@@ -26,14 +26,33 @@ typedef unsigned long ulong;
 
 // SDL related types
 typedef SDL_Color Color;
-#define BLACK (Color){0,0,0,255}
-#define WHITE (Color){255,255,255,255}
-#define RED (Color){255,0,0,255}
-#define GREEN (Color){0,255,0,255}
-#define BLUE (Color){0,0,255,255}
+#define COLOR(r,g,b) (Color){(r),(g),(b),255}
+#define COLORA(r,g,b,a) (Color){(r),(g),(b),(a)}
+#define SCALE_COLOR(c,s) (Color){(c).r*(s),(c).g*(s),(c).b*(s),(c).a}
+#define BLACK COLOR(0,0,0)
+#define WHITE COLOR(255,255,255)
+#define RED COLOR(128,0,0)
+#define LIGHT_RED COLOR(255,0,0)
+#define DARK_RED COLOR(86,0,0)
+#define GREEN COLOR(0,128,0)
+#define LIGHT_GREEN COLOR(0,255,0)
+#define DARK_GREEN COLOR(0,86,0)
+#define LIGHT_BLUE COLOR(0,0,255)
+#define BLUE COLOR(0,0,192)
+#define DARK_BLUE COLOR(0,0,86)
+#define GRAY COLOR(128,128,128)
+#define LIGHT_GRAY COLOR(192,192,192)
+#define DARK_GRAY COLOR(64,64,64)
 typedef SDL_Event Event;
 typedef SDL_Point Vec2;
+#define VEC2(x,y) (Vec2){(x),(y)}
+#define VEC2_ZERO VEC2(0,0)
+#define VEC2_CMP(a,b) ((a).x == (b).x && (a).y == (b).y)
 typedef SDL_Rect Rect;
+#define RECT(x,y,w,h) (Rect){(x),(y),(w),(h)}
+#define RECT_ZERO RECT(0,0,0,0)
+#define RECT_CMP(a,b) ((a).x == (b).x && (a).y == (b).y && (a).w == (b).w && (a).h == (b).h)
+#define VEC2_IN_RECT(v,r) ((v).x >= (r).x && (v).x <= (r).x+(r).w && (v).y >= (r).y && (v).y <= (r).y+(r).h)
 typedef Uint32 Ticks_t;
 
 // Misc types
@@ -129,13 +148,16 @@ DM_FUNC Ticks_t DM_get_ticks(){
 // Resources
 #include "dm_resources.h"
 
-// Events
-#include "dm_events.h"
+// Input
+#include "dm_input.h"
 
 // Rendering
 #include "dm_render.h"
 
 // Animations
 #include "dm_animations.h"
+
+// User Interface (UI / GUI)
+#include "dm_ui.h"
 
 #endif

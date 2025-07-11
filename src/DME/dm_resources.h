@@ -135,7 +135,7 @@ DM_FUNC void DM_free_text(Text* dest){
 DM_FUNC bool DM_load_text(Color c, uint max_width, Text* dest){
 	DM_ASSERT(dest,"render_text: NULL arg");
 	if(!dest->font || !(*dest->font) || strlen(dest->text) < 1) return true;
-	SDL_Surface* loaded_surface = TTF_RenderText_Solid_Wrapped(*dest->font, (const char*)dest->text, c, (max_width)?max_width:(99999));
+	SDL_Surface* loaded_surface = TTF_RenderText_Solid_Wrapped(*dest->font, (const char*)dest->text, c, (max_width)?max_width:(sw));
 	if(!loaded_surface){
 		DM_ERR("TTF_RenderText_Solid(%s) error: %s",dest->text,TTF_GetError());
 		return false;
@@ -143,7 +143,7 @@ DM_FUNC bool DM_load_text(Color c, uint max_width, Text* dest){
 	SDL_Texture* loaded_texture = SDL_CreateTextureFromSurface(renderer,loaded_surface);
 	SDL_FreeSurface(loaded_surface);
 	if(!loaded_texture){
-		DM_ERR("SDL_CreateTextureFRomSurface error: %s",SDL_GetError());
+		DM_ERR("SDL_CreateTextureFromSurface error: %s",SDL_GetError());
 		return false;
 	}
 	if(dest->loaded.src)
@@ -170,28 +170,28 @@ DM_FUNC bool DM_load_tileset(const char* src, Tileset* dest){
 	return true;
 }
 
-DM_FUNC SDL_Rect DM_get_tile(uint col, uint row, Tileset* ts){
-	if(!ts){ DM_ERR("get_tile: NULL arg"); return (SDL_Rect){0,0,0,0}; }
+DM_FUNC Rect DM_get_tile(uint col, uint row, Tileset* ts){
+	if(!ts){ DM_ERR("get_tile: NULL arg"); return RECT_ZERO; }
 	if(row >= ts->rows || col >= ts->cols)
-		return (SDL_Rect){0,0,0,0};
-	return (SDL_Rect){
+		return RECT_ZERO;
+	return RECT(
 		col*ts->tile_width+ts->x_offset,
 		row*ts->tile_height+ts->y_offset,
 		ts->tile_width,
 		ts->tile_height
-	};
+	);
 }
 
-DM_FUNC SDL_Rect DM_get_tile_index(uint index, Tileset* ts){
-	if(!ts){ DM_ERR("get_tile_index: NULL arg"); return (SDL_Rect){0,0,0,0}; }
+DM_FUNC Rect DM_get_tile_index(uint index, Tileset* ts){
+	if(!ts){ DM_ERR("get_tile_index: NULL arg"); return RECT_ZERO; }
 	if(index >= ts->cols * ts->rows)
-		return (SDL_Rect){0,0,0,0};
-	return (SDL_Rect){
+		return RECT_ZERO;
+	return RECT(
 		(index % ts->cols)*ts->tile_width+ts->x_offset,
 		(index / ts->cols)*ts->tile_height+ts->y_offset,
 		ts->tile_width,
 		ts->tile_height
-	};
+	);
 }
 
 DM_FUNC bool DM_load_resource_array(RL_Array rla){

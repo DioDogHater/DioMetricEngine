@@ -17,16 +17,16 @@ DM_FUNC void DM_update_screen(){
 
 // DM_RENDER_TEXTURE(texture, x, y)
 #define DM_RENDER_TEXTURE(t,x,y) ({\
-	DM_render_texture((t),NULL,(Rect){(x),(y),(t).width,(t).height});\
+	DM_render_texture((t),NULL,RECT((x),(y),(t).width,(t).height));\
 })
 // DM_RENDER_TEXTURE_SCALED(texture, x, y, w, h)
 #define DM_RENDER_TEXTURE_SCALED(t,x,y,w,h) ({\
-	DM_render_texture((t),NULL,(Rect){(x),(y),(w),(h)});\
+	DM_render_texture((t),NULL,RECT((x),(y),(w),(h)));\
 })
 // DM_RENDER_TEXTURE_CLIPPED(texture, cx, cy, cw, ch, x, y, w, h)
 #define DM_RENDER_TEXTURE_CLIPPED(t,cx,cy,cw,ch,x,y,w,h) ({\
 	Rect _cr = (Rect){(cx),(cy),(cw),(ch)};\
-	DM_render_texture((t),&_cr,(Rect){(x),(y),(w),(h)});\
+	DM_render_texture((t),&_cr,RECT((x),(y),(w),(h)));\
 })
 
 DM_FUNC void DM_render_texture(Texture t, Rect* c, Rect r){
@@ -42,16 +42,16 @@ DM_FUNC void DM_render_texture(Texture t, Rect* c, Rect r){
 
 // DM_RENDER_TEXTURE_ROT(texture, x, y, w, h, angle)
 #define DM_RENDER_TEXTURE_ROT(t,x,y,w,h,a) ({\
-	DM_render_texture_ex((t),NULL,(Rect){(x),(y),(w),(h)},(a),NULL,FLIP_NONE);\
+	DM_render_texture_ex((t),NULL,RECT((x),(y),(w),(h)),(a),NULL,FLIP_NONE);\
 })
 // DM_RENDER_TEXTURE_FLIP(texture, x, y, w, h, flip)
 #define DM_RENDER_TEXTURE_FLIP(t,x,y,w,h,f) ({\
-	DM_render_texture_ex((t),NULL,(Rect){(x),(y),(w),(h)},0.f,NULL,(f));\
+	DM_render_texture_ex((t),NULL,RECT((x),(y),(w),(h)),0.f,NULL,(f));\
 })
 // DM_RENDER_TEXTURE_CFLIP(texture, cx, cy, cw, ch, x, y, w, h, flip)
 #define DM_RENDER_TEXTURE_CFLIP(t,cx,cy,cw,ch,x,y,w,h,f) ({\
 	Rect _cr = (Rect){(cx),(cy),(cw),(ch)};\
-	DM_render_texture_ex((t),&_cr,(Rect){(x),(y),(w),(h)},0.f,NULL,(f));\
+	DM_render_texture_ex((t),&_cr,RECT((x),(y),(w),(h)),0.f,NULL,(f));\
 })
 
 DM_FUNC void DM_render_texture_ex(Texture t, Rect* c, Rect r, double angle, Vec2* center, SDL_RendererFlip flip){
@@ -75,22 +75,22 @@ DM_FUNC void DM_render_temp_text(const char* txt, Font* font, Color c, int x, in
 
 // DM_RENDER_TILE(tileset, column, row, x, y)
 #define DM_RENDER_TILE(t,c,r,x,y) ({\
-	DM_render_tile((t),(c),(r),(SDL_Rect){(x),(y),(t).tile_width,(t).tile_height},0.f,NULL,FLIP_NONE);\
+	DM_render_tile((t),(c),(r),RECT((x),(y),(t).tile_width,(t).tile_height),0.f,NULL,FLIP_NONE);\
 })
 
 // DM_RENDER_TILE_SCALED(tileset, column, row, x, y, w, h)
 #define DM_RENDER_TILE_SCALED(t,c,r,x,y,w,h) ({\
-	DM_render_tile((t),(c),(r),(SDL_Rect){(x),(y),(w),(h)},0.f,NULL,FLIP_NONE);\
+	DM_render_tile((t),(c),(r),RECT((x),(y),(w),(h)),0.f,NULL,FLIP_NONE);\
 })
 
 // DM_RENDER_TILE_ROT(tileset, column, row, x, y, w, h, angle)
 #define DM_RENDER_TILE_ROT(t,c,r,x,y,w,h,a) ({\
-	DM_render_tile((t),(c),(r),(SDL_Rect){(x),(y),(w),(h)},(a),NULL,FLIP_NONE);\
+	DM_render_tile((t),(c),(r),RECT((x),(y),(w),(h)),(a),NULL,FLIP_NONE);\
 })
 
 // DM_RENDER_TILE_FLIP(tileset, column, row, x, y, w, h, flip)
 #define DM_RENDER_TILE_FLIP(t,c,r,x,y,w,h,f) ({\
-	DM_render_tile((t),(c),(r),(SDL_Rect){(x),(y),(w),(h)},0.f,NULL,(f));\
+	DM_render_tile((t),(c),(r),RECT((x),(y),(w),(h)),0.f,NULL,(f));\
 })
 
 DM_FUNC void DM_render_tile(Tileset ts, int col, int row, Rect r, double angle, Vec2* center, SDL_RendererFlip flip){
@@ -99,24 +99,24 @@ DM_FUNC void DM_render_tile(Tileset ts, int col, int row, Rect r, double angle, 
 	DM_render_texture_ex(ts.asset,&cr,r,angle,center,flip);
 }
 
-// DM_RENDER_ITILE(tileset, column, row, x, y)
+// DM_RENDER_TILE_I(tileset, column, row, x, y)
 #define DM_RENDER_TILE_I(t,i,x,y) ({\
-	DM_render_tile_index((t),(i),(SDL_Rect){(x),(y),(t).tile_width,(t).tile_height},0.f,NULL,FLIP_NONE);\
+	DM_render_tile_index((t),(i),RECT((x),(y),(t).tile_width,(t).tile_height),0.f,NULL,FLIP_NONE);\
 })
 
 // DM_RENDER_TILE_ISCALED(tileset, column, row, x, y, w, h)
 #define DM_RENDER_TILE_ISCALED(t,i,x,y,w,h) ({\
-	DM_render_tile_index((t),(i),(SDL_Rect){(x),(y),(w),(h)},0.f,NULL,FLIP_NONE);\
+	DM_render_tile_index((t),(i),RECT((x),(y),(w),(h)),0.f,NULL,FLIP_NONE);\
 })
 
 // DM_RENDER_TILE_IROT(tileset, column, row, x, y, w, h, angle)
 #define DM_RENDER_TILE_IROT(t,c,r,x,y,w,h,a) ({\
-	DM_render_tile_index((t),(i),(SDL_Rect){(x),(y),(w),(h)},(a),NULL,FLIP_NONE);\
+	DM_render_tile_index((t),(i),RECT((x),(y),(w),(h)),(a),NULL,FLIP_NONE);\
 })
 
 // DM_RENDER_TILE_IFLIP(tileset, column, row, x, y, w, h, flip)
 #define DM_RENDER_TILE_IFLIP(t,c,r,x,y,w,h,f) ({\
-	DM_render_tile_index((t),(i),(SDL_Rect){(x),(y),(w),(h)},0.f,NULL,(f));\
+	DM_render_tile_index((t),(i),RECT((x),(y),(w),(h)),0.f,NULL,(f));\
 })
 
 DM_FUNC void DM_render_tile_index(Tileset* ts, uint index, Rect r, double angle, Vec2* center, SDL_RendererFlip flip){

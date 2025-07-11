@@ -1,5 +1,5 @@
-#ifndef DME_EVENTS_H
-#define DME_EVENTS_H
+#ifndef DME_INPUT_H
+#define DME_INPUT_H
 
 // Handle events
 // EVENT(KEYDOWN) instead of SDL_KEYDOWN
@@ -28,7 +28,7 @@ typedef struct {
 	bool up, down, right, left;
 	Vec3 direction;
 } PlayerController;
-#define NEW_PLAYER_CONTROLLER(u,d,r,l) (PlayerController){(u),(d),(r),(l),false,false,false,false,VEC3ZERO}
+#define NEW_PLAYER_CONTROLLER(u,d,r,l) (PlayerController){(u),(d),(r),(l),false,false,false,false,VEC3_ZERO}
 
 DM_FUNC void PlayerController_update(PlayerController* pc){
 	DM_ASSERTV(pc,"PlayerController_update: NULL arg");
