@@ -9,7 +9,7 @@ typedef struct{
 	SDL_Texture* src;
 	uint width, height;
 } Texture;
-#define NEW_TEXTURE() (Texture){NULL,0,0}
+#define NEW_TEXTURE() {NULL,0,0}
 
 // Font
 typedef TTF_Font* Font;
@@ -28,7 +28,7 @@ typedef union{
 		uint width, height;
 	};
 } Text;
-#define NEW_TEXT(t,f) (Text){NEW_TEXTURE(),(t),(f)}
+#define NEW_TEXT(t,f) {.loaded=NEW_TEXTURE(),.text=(t),.font=(f)}
 
 // Tileset
 typedef struct{
@@ -37,7 +37,7 @@ typedef struct{
 	uint tile_width, tile_height;
 	uint rows, cols;
 } Tileset;
-#define NEW_TILESET(xo,yo,w,h) (Tileset){NEW_TEXTURE(),(xo),(yo),(w),(h),0,0}
+#define NEW_TILESET(xo,yo,w,h) {NEW_TEXTURE(),(xo),(yo),(w),(h),0,0}
 
 // Resource Loading (RL)
 typedef enum{
@@ -69,12 +69,12 @@ typedef struct{
 } RL_Res;	// Resource Loading Resource
 typedef RL_Res RL_Array[];	// Resource Loading Array
 // Macros for convenience
-#define RL_ELEM(t,r,s) (RL_Res){(RL_type)(t),(RL_ptr)(r),(RL_src)(s)}
-#define RL_TEXTURE(r,s) (RL_Res){(RL_type)(RL_Texture),(RL_ptr){.texture=&(r)},(RL_src){(const char*)(s)}}
-#define RL_FONT(r,sz,s) (RL_Res){(RL_type)(RL_Font),(RL_ptr){.font=&(r)},(RL_src){.font_path=(const char*)(s), .font_size=(sz)}}
-#define RL_TEXT(r,s) (RL_Res){(RL_type)(RL_Text),(RL_ptr){.text=&(r)},(RL_src){.color=(Color)(s)}}
-#define RL_TILESET(r,s) (RL_Res){(RL_type)(RL_Tileset),(RL_ptr){.tileset=&(r)},(RL_src){(const char*)(s)}}
-#define RL_NULL() (RL_Res){(RL_type)(RL_None),(RL_ptr){._invalid=NULL},(const char*)NULL}
+#define RL_ELEM(t,r,s) {(RL_type)(t),(RL_ptr)(r),(RL_src)(s)}
+#define RL_TEXTURE(r,s) {(RL_type)(RL_Texture),(RL_ptr){.texture=&(r)},(RL_src){(const char*)(s)}}
+#define RL_FONT(r,sz,s) {(RL_type)(RL_Font),(RL_ptr){.font=&(r)},(RL_src){.font_path=(const char*)(s), .font_size=(sz)}}
+#define RL_TEXT(r,s) {(RL_type)(RL_Text),(RL_ptr){.text=&(r)},(RL_src){.color=(Color)(s)}}
+#define RL_TILESET(r,s) {(RL_type)(RL_Tileset),(RL_ptr){.tileset=&(r)},(RL_src){(const char*)(s)}}
+#define RL_NULL() {(RL_type)(RL_None),(RL_ptr){._invalid=NULL},(const char*)NULL}
 
 // Resource handling
 DM_FUNC void DM_free_texture(Texture* dest){
@@ -124,6 +124,11 @@ DM_FUNC bool DM_load_font(const char* src, uint size, Font* dest){
 		DM_free_font(dest);
 	*dest = loaded_font;
 	return true;
+}
+
+DM_FUNC void DM_set_font_size(Font dest, uint size){
+	DM_ASSERTV(dest,"set_font_size: NULL arg");
+	TTF_SetFontSize(dest,size);
 }
 
 DM_FUNC void DM_free_text(Text* dest){

@@ -26,14 +26,14 @@ typedef struct{
 	Vec3 pos;
 	float yaw;
 } Transform;
-#define TRANSFORM(x,y,z,a) (Transform){VEC3((x),(y),(z)),(a)}
-#define TRANSFORM_IDENTITY (Transform){VEC3_ZERO,0.f}
+#define TRANSFORM(x,y,z,a) {VEC3((x),(y),(z)),(a)}
+#define TRANSFORM_IDENTITY {VEC3_ZERO,0.f}
 
 typedef struct{
 	float x, y;
 	uint tile_width, tile_height;
 } Projection;
-#define PROJECTION(x,y,w,h) (Projection){(x),(y),(w),(h)}
+#define PROJECTION(x,y,w,h) {(x),(y),(w),(h)}
 
 // Vec3 binary operation
 #define VEC3_BIN_OP(name,op) \
