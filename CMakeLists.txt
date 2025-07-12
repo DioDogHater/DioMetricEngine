@@ -9,8 +9,8 @@ add_executable(main src/main.c)
 # Uncomment these lines to setup SDL
 # in case you dont have it installed system-wide
 
-#include_directories(SDL2 include path)
-#link_directories(SDL2 lib path)
+#target_include_directories(main PUBLIC path_to_sdl_include)
+#target_link_directories(main PUBLIC path_to_sdl_lib)
 
 target_link_libraries(main m)
 target_link_libraries(main SDL2)
