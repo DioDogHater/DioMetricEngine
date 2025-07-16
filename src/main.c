@@ -39,11 +39,16 @@ void free_resources(){
 void wave_function(Chunk* c, float time){
     Block* block = c->blocks;
     for(int y = 0; y < CHUNK_ROWS; y++){
-	for(int x = 0; x < CHUNK_COLS; x++, block++){
-	    float dist = sqrtf((float)(SQR(x+c->pos.x-CHUNK_COLS/2) + SQR(y+c->pos.z-CHUNK_ROWS/2)))/(float)(CHUNK_COLS);
-	    block->height = (short)round(sin(-time*2.f+dist*32.f)*2.f);
-	}
+	    for(int x = 0; x < CHUNK_COLS; x++, block++){
+	        float dist = sqrtf((float)(SQR(x+c->pos.x-CHUNK_COLS/2) + SQR(y+c->pos.z-CHUNK_ROWS/2)))/(float)(CHUNK_COLS);
+	        block->height = (short)round(sin(-time*2.f+dist*32.f)*2.f);
+	    }
     }
+}
+
+static void on_button_pressed(UI_Element* ui){
+    ui->button.pressed = false;
+    ui->button.can_be_pressed = false;
 }
 
 int main(int argc, char *argv[]){
@@ -103,7 +108,27 @@ int main(int argc, char *argv[]){
 
     UI_TextButton ui_text_button = NEW_UI_TEXT_BUTTON(1,53,50,10,GREEN,BLACK,1,WHITE,"PLAY",&ps2p);
     UI_LOAD_TEXT(ui_text_button);
+    ui_text_button.on_press = on_button_pressed;
     UI_add_child(UI_ELEM(ui_window),UI_ELEM(ui_text_button));
+
+    UI_Slider ui_slider = NEW_UI_SLIDER(0,ui_window.rect.h-25,ui_window.rect.w,25,DARK_BLUE,RED,0.f,5.f,2.5f,0.1f);
+    UI_add_child(UI_ELEM(ui_window),UI_ELEM(ui_slider));
+
+    UI_Text ui_slider_text = NEW_UI_TEXT(0,-10,200,0,WHITE,"SLIDER VALUE:",&ps2p);
+    UI_add_child(UI_ELEM(ui_slider),UI_ELEM(ui_slider_text));
+
+    UI_Window ui_window2 = NEW_UI_WINDOW(sw-260,sh-260,256,256,BLACK,DARK_BLUE,2);
+    UI_add_child(UI_ELEM(ui_screen),UI_ELEM(ui_window2));
+
+    UI_Grid ui_grid = NEW_UI_GRID(0,0,256,256,64,64,0,0);
+    UI_add_child(UI_ELEM(ui_window2),UI_ELEM(ui_grid));
+
+    UI_Image ui_image_copies[16];
+    for(uint i = 0; i < 16; i++){
+        ui_image_copies[i] = NEW_UI_IMAGE(0,0,0,0,RECT_ZERO);
+        UI_SET_IMAGE(ui_image_copies[i],ui_image.src);
+        UI_add_child(UI_ELEM(ui_grid),UI_ELEM(ui_image_copies[i]));
+    }
 
     // Game loop
     bool running = true;
@@ -115,49 +140,55 @@ int main(int argc, char *argv[]){
     	    now = SDL_GetTicks();
     	}
 	
-	// deltaTime calculation
-	double deltaTime = (double)(now-last_frame)/1000.f;
-	time += deltaTime;
-	last_frame = now;
+	    // deltaTime calculation
+	    double deltaTime = (double)(now-last_frame)/1000.f;
+	    time += deltaTime;
+	    last_frame = now;
 
-	// Update FPS counter
-	sprintf(fps_counter.text,"%.1f FPS\nCamera: %.1f, %.1f, %.1f",1.f/deltaTime,-camera.pos.x,-camera.pos.y,-camera.pos.z);
-	DM_load_text(WHITE,0,&fps_counter);
+	    // Update FPS counter
+	    sprintf(fps_counter.text,"%.1f FPS\nCamera: %.1f, %.1f, %.1f",1.f/deltaTime,-camera.pos.x,-camera.pos.y,-camera.pos.z);
+	    DM_load_text(WHITE,0,&fps_counter);
 
-	// Handle events
-	Event e;
-	while(DM_poll_event(&e)){
-	    if(IS_EVENT(e,QUIT))
-	    	running = false;
-	    if(UI_update(UI_ELEM(ui_screen),&e))
-		continue;
-	}
+	    // Handle events
+	    Event e;
+	    while(DM_poll_event(&e)){
+	        if(IS_EVENT(e,QUIT))
+	        	running = false;
+	        if(UI_update(UI_ELEM(ui_screen),&e))
+		    continue;
+	    }
 	
-	// Move camera
-	PlayerController_update(&pl_controller);
-	camera.pos = Vec3_sub(camera.pos, Vec3_scale(pl_controller.direction, pl_speed * deltaTime));
+	    // Move camera
+	    PlayerController_update(&pl_controller);
+	    camera.pos = Vec3_sub(camera.pos, Vec3_scale(pl_controller.direction, pl_speed * deltaTime));
 	
-	short player_y = Chunk_sample_height(Map_find_chunk(&map,-camera.pos.x,-camera.pos.z),-camera.pos.x,-camera.pos.z);
+	    short player_y = Chunk_sample_height(Map_find_chunk(&map,-camera.pos.x,-camera.pos.z),-camera.pos.x,-camera.pos.z);
 	
-	DM_clear_screen();
+	    DM_clear_screen();
 	
-	// Render map
-	Map_render(&map, &map_tiles, &camera, &isometric);
+	    // Render map
+	    Map_render(&map, &map_tiles, &camera, &isometric);
 
-	// Animate map
-	for(int i = 0; i < map.size; i++)
-	    wave_function(&map.arr[i],time);
+	    // Animate map
+	    for(int i = 0; i < map.size; i++)
+	        wave_function(&map.arr[i],time);
 
-	// Render player
-	DM_update_animation(&player_run);
-	DM_update_animation(&player_rotate);
-	DM_RENDER_TILE_SCALED(dummy_run,player_run.frame,player_rotate.frame,sw2-32,sh2-64-player_y*4,64,64);
+	    // Render player
+	    DM_update_animation(&player_run);
+	    DM_update_animation(&player_rotate);
+	    DM_RENDER_TILE_SCALED(dummy_run,player_run.frame,player_rotate.frame,sw2-32,sh2-64-player_y*4,64,64);
 		
-	// Render the UI
-	UI_render(UI_ELEM(ui_screen));	
+	    // Update the slider text if needed
+        if(ui_slider.selected){
+            sprintf(ui_slider_text.src.text,"SLIDER VALUE: %g",ui_slider.value);
+            UI_LOAD_TEXT(ui_slider_text);
+        }
+
+        // Render the UI
+	    UI_render(UI_ELEM(ui_screen));
 	
-	// Display FPS counter
-	DM_render_text(fps_counter,0,0,1.f);
+	    // Display FPS counter
+	    DM_render_text(fps_counter,0,0,1.f);
 
     	DM_update_screen();
     }
