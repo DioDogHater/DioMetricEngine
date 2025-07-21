@@ -10,7 +10,10 @@ enum{
 	DM_UI_TEXT,
 	DM_UI_IMAGE,
 	DM_UI_SLIDER,
-	DM_UI_GRID
+	DM_UI_GRID,
+	DM_UI_SCROLL,
+	DM_UI_CONSOLE,
+	DM_UI_INPUT_FIELD
 };
 
 typedef unsigned short UI_Type;
@@ -19,7 +22,7 @@ typedef union UI_Element UI_Element;
 typedef void (*UI_Callback)(UI_Element*);
 
 #ifndef MAX_UI_CHILDREN
-#define MAX_UI_CHILDREN 10
+#define MAX_UI_CHILDREN 20
 #endif
 
 // UI Element basic members
@@ -75,6 +78,7 @@ typedef struct{
 	Color text_color, bg_color, border_color;
 	uchar border_width;
 	Text src;
+	bool copy;
 } UI_TextButton;
 #define NEW_UI_TEXT_BUTTON(x,y,w,h,bgc,bc,bw,tc,t,f) (UI_TextButton){DM_UI_TEXT_BUTTON,true,RECT((x),(y),(w),(h)),NULL,{NULL},false,false,true,NULL,NULL,(tc),(bgc),(bc),(bw),NEW_TEXT((t),(f))}
 
@@ -83,20 +87,22 @@ typedef struct{
 	DM_UI_DEP
 	Color text_color;
 	Text src;
+	bool copy;
 } UI_Text;
-#define NEW_UI_TEXT(x,y,w,h,c,t,f) (UI_Text){DM_UI_TEXT,true,RECT((x),(y),(w),(h)),NULL,{NULL},(c),NEW_TEXT((t),(f))}
-#define UI_LOAD_TEXT(t) DM_load_text((t).text_color,(t).rect.w,&(t).src)
-#define UI_SET_TEXT(d,s) (d).src = (s)
+#define NEW_UI_TEXT(x,y,w,h,c,t,f) (UI_Text){DM_UI_TEXT,true,RECT((x),(y),(w),(h)),NULL,{NULL},(c),NEW_TEXT((t),(f)),false}
+#define UI_LOAD_TEXT(t) ({if((t).copy){(t).src=(Text)NEW_TEXTURE();(t).copy = false;}DM_load_text((t).text_color,(t).rect.w,&(t).src);})
+#define UI_SET_TEXT(d,s) ({(d).src=(s);(d).copy=true;})
 
 typedef struct{
 	DM_UI_BASICS
 	DM_UI_DEP
 	Rect clip_rect;
 	Texture src;
+	bool copy;
 } UI_Image;
-#define NEW_UI_IMAGE(x,y,w,h,c) (UI_Image){DM_UI_IMAGE,true,RECT((x),(y),(w),(h)),NULL,{NULL},(c),NEW_TEXTURE()}
-#define UI_LOAD_IMAGE(t,s) DM_load_texture((s),&(t).src);
-#define UI_SET_IMAGE(d,s) (d).src = (s)
+#define NEW_UI_IMAGE(x,y,w,h,c) (UI_Image){DM_UI_IMAGE,true,RECT((x),(y),(w),(h)),NULL,{NULL},(c),NEW_TEXTURE(),false}
+#define UI_LOAD_IMAGE(t,s) ({if((t).copy){(t).src=(Texture)NEW_TEXTURE();}DM_load_texture((s),&(t).src);})
+#define UI_SET_IMAGE(d,s) ({(d).src=(s);(d).copy=true;})
 
 typedef struct{
 	DM_UI_BASICS
@@ -122,6 +128,33 @@ typedef struct{
 } UI_Grid;
 #define NEW_UI_GRID(x,y,w,h,cw,ch,px,py) (UI_Grid){DM_UI_GRID,true,RECT((x),(y),(w),(h)),NULL,{NULL},(cw),(ch),VEC2((px),(py))}
 
+typedef struct{
+	DM_UI_BASICS
+	DM_UI_DEP
+	uint bar_width, content_height;
+	Color bar_color;
+	int scroll;
+} UI_Scroll;
+#define NEW_UI_SCROLL(x,y,w,h,bw,bc,ch) (UI_Scroll){DM_UI_SCROLL,true,RECT((x),(y),(w),(h)),NULL,{NULL},(bw),(ch),(bc),0}
+
+typedef struct{
+	DM_UI_BASICS
+	DM_UI_DEP
+	ushort cursor;
+	Text src;
+} UI_Console;
+#define NEW_UI_CONSOLE(x,y,w,h,f) (UI_Console){DM_UI_CONSOLE,true,RECT((x),(y),(w),(h)),NULL,{NULL},0,NEW_TEXT("\0",(f))}
+
+typedef struct{
+	DM_UI_BASICS
+	DM_UI_DEP
+	UI_Callback on_change, on_enter;
+	Text src;
+} UI_InputField;
+#define NEW_UI_INPUT_FIELD(x,y,w,h,f) (UI_InputField){DM_UI_INPUT_FIELD,true,RECT((x),(y),(w),(h)),NULL,{NULL},NULL,NULL,NEW_TEXT("\0",(f))}
+#define UI_GET_FIELD(f) ((f).src.text)
+#define UI_CLEAR_FIELD(f) ({(f).src.text[0]='\0';})
+
 union UI_Element{
 	struct{
 		DM_UI_BASICS
@@ -142,6 +175,9 @@ union UI_Element{
 	UI_Image image;
 	UI_Slider slider;
 	UI_Grid grid;
+	UI_Scroll scroll;
+	UI_Console console;
+	UI_InputField field;
 };
 
 #define UI_ELEM(x) (UI_Element*)&(x)
@@ -209,23 +245,37 @@ DM_FUNC void UI_free(UI_Element* ui){
 		UI_free(*ptr);
 	switch(ui->type){
 	case DM_UI_TEXT_BUTTON:
-		DM_free_text(&ui->text_button.src);
+		if(!ui->image.copy)
+			DM_free_text(&ui->text_button.src);
 		break;
 	case DM_UI_TEXT:
-		DM_free_text(&ui->text.src);
+		if(!ui->image.copy)
+			DM_free_text(&ui->text.src);
 		break;
 	case DM_UI_IMAGE:
-		DM_free_texture(&ui->image.src);
+		if(!ui->image.copy)
+			DM_free_texture(&ui->image.src);
 		break;
 	}
+}
+
+#define UI_SCROLL_BAR_HEIGHT 15
+DM_FUNC void UI_render_scroll(UI_Element* ui, Rect rect){
+	for(UI_Element** ptr = ui->children; *ptr; ptr++)
+		ui_render(*ptr, VEC2(rect.x, rect.y-ui->scroll.scroll));
+	DM_fill_rect(
+		0, (rect.h-UI_SCROLL_BAR_HEIGHT)*ui->scroll.content_height/ui->scroll.scroll,
+		UI_SCROLL_BAR_HEIGHT, ui->scroll.bar_width,
+		ui->scroll.bar_color
+	);
 }
 
 #define UI_WINDOW_BUTTON_W 7
 #define UI_WINDOW_BUTTON_H 5
 
-DM_FUNC void UI_render(UI_Element* ui){
+DM_FUNC void UI_render(UI_Element* ui, Vec2 parent_pos){
 	if(!ui || !ui->visible) return;
-	Rect rect = UI_get_rect(ui);
+	Rect rect = RECT(parent_pos.x,parent_pos.y,ui->rect.w,ui->rect.h);
 	switch(ui->type){
 	// UI_Frame
 	case DM_UI_FRAME:
@@ -303,10 +353,18 @@ DM_FUNC void UI_render(UI_Element* ui){
 		// Slider "handle" (Cursor)
 		DM_fill_rect(rect.x+(int)((ui->slider.value-ui->slider.minimum)/ui->slider.maximum*(float)rect.w)-ui->slider.handle_width/2,rect.y,ui->slider.handle_width,rect.h,ui->slider.handle_color);
 		break;
+	case DM_UI_SCROLL:
+		return UI_render_scroll(ui,rect);
+	case DM_UI_CONSOLE:
+		DM_RENDER_TEXTURE_CLIPPED(ui->console.src.loaded,0,ui->console.src.height-rect.h,rect.w,rect.h,rect.x,rect.y,rect.w,rect.h);
+		break;
+	case DM_UI_INPUT_FIELD:
+		DM_render_text(ui->field.src,rect.x+rect.w/2-ui->field.src.width/2,rect.y,1.f);
+		break;
 	}
 	// Render all children next
 	for(UI_Element** ptr = ui->children; *ptr; ptr++)
-		UI_render(*ptr);
+		UI_render(*ptr, VEC2(parent_pos.x+ui->rect.x,parent_pos.y+ui->rect.y));
 }
 
 DM_FUNC void UI_update_slider_value(UI_Element* ui, int mouse_x, Rect rect){
@@ -319,7 +377,7 @@ DM_FUNC void UI_update_slider_value(UI_Element* ui, int mouse_x, Rect rect){
 DM_FUNC bool UI_update(UI_Element* ui, Event* e){
 	// Check if we should update
 	if(!ui || !e || !ui->visible)
-		return false;	
+		return false;
 
 	// Update children first
 	for(UI_Element** ptr = ui->children; *ptr; ptr++){
@@ -406,7 +464,17 @@ DM_FUNC bool UI_update(UI_Element* ui, Event* e){
 			return true;
 		}
 		break;
-	}	
+	case EVENT(MOUSEWHEEL):
+		if(ui->type == DM_UI_SCROLL){
+			Rect rect = UI_get_rect(ui);
+			Vec2 mouse = VEC2(e->wheel.mouseX,e->wheel.mouseY);
+			if(VEC2_IN_RECT(mouse,rect)){
+				ui->scroll.scroll += e->wheel.y;
+				ui->scroll.scroll = CLAMP(ui->scroll.scroll, 0, ui->scroll.content_height-rect.h);
+			}
+		}
+		break;
+	}
 	
 	return false;
 }

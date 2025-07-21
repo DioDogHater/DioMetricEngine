@@ -31,13 +31,13 @@ typedef struct{
 } Animationf;
 #define NEW_ANIMATIONF(s,e,i,f) (Animationf){(Ticks_t)(i),0,(float)(s),(float)(e),(float)(s),(AnimFlags)(f)}
 
-void DM_reset_animation(Animation* anim){
+void Animation_reset(Animation* anim){
 	DM_ASSERTV(anim,"reset_animation: NULL arg");
 	anim->last_frame = DM_get_ticks();
 	anim->frame = ((anim->flags & DM_ANIM_REVERSE)?anim->end_frame:anim->start_frame);
 }
 
-void DM_update_animation(Animation* anim){
+void Animation_update(Animation* anim){
 	DM_ASSERTV(anim,"update_animation: NULL arg");
 	Ticks_t now = DM_get_ticks();
 	if(anim->flags & DM_ANIM_STOP){
@@ -74,13 +74,13 @@ void DM_update_animation(Animation* anim){
 	}
 }
 
-void DM_reset_animationf(Animationf* anim){
+void Animationf_reset(Animationf* anim){
 	DM_ASSERTV(anim,"reset_animationf: NULL arg");
 	anim->last_completion = DM_get_ticks();
 	anim->current = ((anim->flags & DM_ANIM_REVERSE)?anim->end:anim->start);
 }
 
-void DM_update_animationf(Animationf* anim){
+void Animationf_update(Animationf* anim){
 	DM_ASSERTV(anim,"update_animationf: NULL arg");
 	Ticks_t now = DM_get_ticks();
 	if(anim->flags & DM_ANIM_STOP){

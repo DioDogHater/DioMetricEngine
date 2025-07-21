@@ -126,7 +126,6 @@ int main(int argc, char *argv[]){
     UI_Image ui_image_copies[16];
     for(uint i = 0; i < 16; i++){
         ui_image_copies[i] = NEW_UI_IMAGE(0,0,0,0,RECT_ZERO);
-        UI_SET_IMAGE(ui_image_copies[i],ui_image.src);
         UI_add_child(UI_ELEM(ui_grid),UI_ELEM(ui_image_copies[i]));
     }
 
@@ -185,7 +184,7 @@ int main(int argc, char *argv[]){
         }
 
         // Render the UI
-	    UI_render(UI_ELEM(ui_screen));
+	    UI_render(UI_ELEM(ui_screen), VEC2_ZERO);
 	
 	    // Display FPS counter
 	    DM_render_text(fps_counter,0,0,1.f);

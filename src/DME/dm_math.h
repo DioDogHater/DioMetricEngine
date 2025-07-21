@@ -54,10 +54,16 @@ VEC3_BIN_OP(mul,*);
 VEC3_UNA_OP(scale,v.x*scalar,v.y*scalar,v.z*scalar,float scalar);
 VEC3_UNA_OP(div_scale,v.x/scalar,v.y/scalar,v.z/scalar,float scalar);
 //VEC3_UNA_OP(neg,-v.x,-v.y,-v.z);
-//VEC3_UNA_OP(abs,ABS(v.x),ABS(v.y),ABS(v.z));
+VEC3_UNA_OP(abs,ABS(v.x),ABS(v.y),ABS(v.z));
 VEC3_UNA_OP(floor,floor(v.x),floor(v.y),floor(v.z));
 DM_FUNC float Vec3_magnitude(Vec3 v){
 	return sqrt(SQR(v.x)+SQR(v.y)+SQR(v.z));
+}
+DM_FUNC float Vec3_depth(Vec3 v){
+	return v.x + v.z;
+}
+DM_FUNC float Vec3_magnitude_squared(Vec3 v){
+	return SQR(v.x)+SQR(v.y)+SQR(v.z);
 }
 DM_FUNC Vec3 Vec3_normalize(Vec3 v){
 	float m = Vec3_magnitude(v);
