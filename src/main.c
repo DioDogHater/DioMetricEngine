@@ -29,7 +29,7 @@ RL_Array resources = {
 };
 
 bool load_resources(){
-    return DM_load_resource_array(resources);	
+    return DM_load_resource_array(resources);
 }
 
 void free_resources(){
@@ -69,12 +69,13 @@ int main(int argc, char *argv[]){
 
     // Player run animation
     Animation player_run = NEW_ANIMATION(0,4,100,DM_ANIM_REPEAT);
-    DM_reset_animation(&player_run);
+    Animation_reset(&player_run);
     Animation player_rotate = NEW_ANIMATION(0,7,1000,DM_ANIM_REPEAT);
-    DM_reset_animation(&player_rotate);
+    Animation_reset(&player_rotate);
     
     // Create chunks
     Map_alloc(&map,9);
+    map.arr[0].pos = VEC3_ZERO;
     map.arr[1].pos = VEC3(CHUNK_COLS,0.f,CHUNK_ROWS);
     map.arr[2].pos = VEC3(-CHUNK_COLS,0.f,CHUNK_ROWS);
     map.arr[3].pos = VEC3(CHUNK_COLS,0.f,-CHUNK_ROWS);
@@ -92,24 +93,24 @@ int main(int argc, char *argv[]){
     
     UI_Bounds ui_screen = NEW_UI_BOUNDS(0,0,sw,sh);
 
-    UI_Window ui_window = NEW_UI_WINDOW(100,100,200,100,GRAY,DARK_BLUE,2);
-    UI_add_child(UI_ELEM(ui_screen),UI_ELEM(ui_window));
+    UI_Window ui_window = NEW_UI_WINDOW(200,200,200,100,GRAY,DARK_BLUE,2);
+    UI_add_child(UI_ELEM(ui_screen), UI_ELEM(ui_window));
 
     UI_Frame ui_frame = NEW_UI_FRAME(1,1,50,50,LIGHT_GRAY,BLACK,1);
-    UI_add_child(UI_ELEM(ui_window),UI_ELEM(ui_frame));
+    UI_add_child(UI_ELEM(ui_window), UI_ELEM(ui_frame));
 	
     UI_Image ui_image = NEW_UI_IMAGE(0,0,50,50,DM_get_tile(0,0,&dummy_idle));
     UI_LOAD_IMAGE(ui_image,"assets/dummy/dialogue.png");
-    UI_add_child(UI_ELEM(ui_frame),UI_ELEM(ui_image));
+    UI_add_child(UI_ELEM(ui_frame), UI_ELEM(ui_image));
 
     UI_Text ui_text = NEW_UI_TEXT(52,0,149,0,WHITE,"Hello world! I love hawt dawgs and cheezbargurs wit fryes!",&ps2p);
     UI_LOAD_TEXT(ui_text);
-    UI_add_child(UI_ELEM(ui_window),UI_ELEM(ui_text));
+    UI_add_child(UI_ELEM(ui_window), UI_ELEM(ui_text));
 
     UI_TextButton ui_text_button = NEW_UI_TEXT_BUTTON(1,53,50,10,GREEN,BLACK,1,WHITE,"PLAY",&ps2p);
     UI_LOAD_TEXT(ui_text_button);
     ui_text_button.on_press = on_button_pressed;
-    UI_add_child(UI_ELEM(ui_window),UI_ELEM(ui_text_button));
+    UI_add_child(UI_ELEM(ui_window), UI_ELEM(ui_text_button));
 
     UI_Slider ui_slider = NEW_UI_SLIDER(0,ui_window.rect.h-25,ui_window.rect.w,25,DARK_BLUE,RED,0.f,5.f,2.5f,0.1f);
     UI_add_child(UI_ELEM(ui_window),UI_ELEM(ui_slider));
@@ -126,7 +127,7 @@ int main(int argc, char *argv[]){
     UI_Image ui_image_copies[16];
     for(uint i = 0; i < 16; i++){
         ui_image_copies[i] = NEW_UI_IMAGE(0,0,0,0,RECT_ZERO);
-        UI_add_child(UI_ELEM(ui_grid),UI_ELEM(ui_image_copies[i]));
+        UI_add_child(UI_ELEM(ui_grid), UI_ELEM(ui_image_copies[i]));
     }
 
     // Game loop
@@ -173,9 +174,9 @@ int main(int argc, char *argv[]){
 	        wave_function(&map.arr[i],time);
 
 	    // Render player
-	    DM_update_animation(&player_run);
-	    DM_update_animation(&player_rotate);
-	    DM_RENDER_TILE_SCALED(dummy_run,player_run.frame,player_rotate.frame,sw2-32,sh2-64-player_y*4,64,64);
+	    Animation_update(&player_run);
+	    Animation_update(&player_rotate);
+	    DM_RENDER_TILE_SCALED(dummy_run, player_run.frame, player_rotate.frame, sw2-32, sh2-64-player_y*4, 64, 64);
 		
 	    // Update the slider text if needed
         if(ui_slider.selected){
@@ -196,7 +197,6 @@ int main(int argc, char *argv[]){
     Map_free(&map);
 
     free_resources();
-    
     DM_quit();
 
     return 0;

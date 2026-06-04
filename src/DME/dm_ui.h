@@ -17,7 +17,6 @@ enum{
 };
 
 typedef unsigned short UI_Type;
-union UI_Element;
 typedef union UI_Element UI_Element;
 typedef void (*UI_Callback)(UI_Element*);
 
@@ -259,10 +258,12 @@ DM_FUNC void UI_free(UI_Element* ui){
 	}
 }
 
+DM_FUNC void UI_render(UI_Element* ui, Vec2 parent_pos);
+
 #define UI_SCROLL_BAR_HEIGHT 15
 DM_FUNC void UI_render_scroll(UI_Element* ui, Rect rect){
 	for(UI_Element** ptr = ui->children; *ptr; ptr++)
-		ui_render(*ptr, VEC2(rect.x, rect.y-ui->scroll.scroll));
+		UI_render(*ptr, VEC2(rect.x, rect.y-ui->scroll.scroll));
 	DM_fill_rect(
 		0, (rect.h-UI_SCROLL_BAR_HEIGHT)*ui->scroll.content_height/ui->scroll.scroll,
 		UI_SCROLL_BAR_HEIGHT, ui->scroll.bar_width,
@@ -275,7 +276,7 @@ DM_FUNC void UI_render_scroll(UI_Element* ui, Rect rect){
 
 DM_FUNC void UI_render(UI_Element* ui, Vec2 parent_pos){
 	if(!ui || !ui->visible) return;
-	Rect rect = RECT(parent_pos.x,parent_pos.y,ui->rect.w,ui->rect.h);
+	Rect rect = RECT(parent_pos.x + ui->rect.x, parent_pos.y + ui->rect.y, ui->rect.w, ui->rect.h);
 	switch(ui->type){
 	// UI_Frame
 	case DM_UI_FRAME:
@@ -364,7 +365,7 @@ DM_FUNC void UI_render(UI_Element* ui, Vec2 parent_pos){
 	}
 	// Render all children next
 	for(UI_Element** ptr = ui->children; *ptr; ptr++)
-		UI_render(*ptr, VEC2(parent_pos.x+ui->rect.x,parent_pos.y+ui->rect.y));
+		UI_render(*ptr, VEC2(rect.x, rect.y));
 }
 
 DM_FUNC void UI_update_slider_value(UI_Element* ui, int mouse_x, Rect rect){
